@@ -4,9 +4,9 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "prisma generate && prisma migrate dev --name init && next build",
+    "build": "next build",
     "start": "next start",
-    "prisma": "prisma"
+    "prisma": "prisma generate && prisma migrate deploy"
   },
   "dependencies": {
     "next": "13.5.2",
