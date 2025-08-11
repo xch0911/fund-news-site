@@ -4,9 +4,9 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "next build",
+    "build": "rm -rf node_modules/@prisma/client && prisma generate && next build",
     "start": "next start",
-    "prisma": "prisma generate && prisma migrate deploy"
+    "prisma": "prisma"
   },
   "dependencies": {
     "next": "13.5.2",

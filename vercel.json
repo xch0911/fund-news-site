@@ -1,0 +1,4 @@
+{
+  "buildCommand": "prisma generate && npm run build",
+  "outputDirectory": ".next"  // 根据项目框架调整（如 Next.js 是 .next，其他可能是 dist 等）
+}
