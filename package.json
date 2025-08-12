@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "rm -rf node_modules/@prisma/client && npx prisma generate && npx prisma migrate deploy && npm run seed && next build",
+    "build": "rm -rf node_modules/@prisma/client && npx prisma generate && npx prisma db push && npm run seed && next build",
     "start": "next start"
   },
   "dependencies": {
