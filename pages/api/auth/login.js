@@ -7,7 +7,8 @@ export default async function handler(req,res){
   const { username, password } = req.body
   const user = await prisma.user.findUnique({ where: { username } })
   if(!user) return res.status(401).json({ error: '用户名或密码错误' })
-  const ok = await bcrypt.compare(password, user.passwordHash)
+  const ok = await bcrypt.compare(password, user.passwordHash);
+  console.log(ok);
   if(!ok) return res.status(401).json({ error: '用户名或密码错误' })
   const token = signToken({ id: user.id, username: user.username, role: user.role })
   setTokenCookie(res, token)
