@@ -1,6 +1,0 @@
-{
-  "scripts": {
-    "build": "next build",
-    "postbuild": "npx prisma migrate deploy && npx prisma generate"
-  }
-}
