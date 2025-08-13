@@ -228,17 +228,6 @@ export default function NewArticle(){
                 </div>
             </form>
 
-            {/* 使用提示 */}
-            <div className="mt-6 p-4 bg-blue-50 border-l-4 border-blue-400 text-sm text-blue-800">
-                <h4 className="font-semibold mb-2">表格功能说明：</h4>
-                <ul className="space-y-1">
-                    <li>• 使用上方的表格工具按钮插入不同尺寸的表格</li>
-                    <li>• 表格插入后可以直接在编辑器中编辑内容</li>
-                    <li>• 支持在表格单元格中使用富文本格式（加粗、颜色等）</li>
-                    <li>• 可以复制粘贴Excel或其他表格内容</li>
-                    <li>• 表格样式已经预设，确保在前端显示美观</li>
-                </ul>
-            </div>
         </div>
     )
 }
