@@ -36,6 +36,9 @@ export default function NewArticle() {
             Quill.register({ 'modules/table-better': QuillTableBetter }, true)
 
             setModules({
+                keyboard: {
+                    bindings: Quill.import('modules/keyboard').defaults.bindings
+                },
                 toolbar: {
                     container: [
                         ['bold', 'italic', 'underline', 'strike'],
