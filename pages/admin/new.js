@@ -5,12 +5,10 @@ import axios from 'axios'
 
 const ReactQuill = dynamic(
     async () => {
+        const Quill = (await import('quill')).default;
+        const { default: QuillTable } = await import('quill-table');
+        Quill.register('modules/table', QuillTable);
         const { default: RQ } = await import('react-quill');
-        const Quill = await import('quill');
-        const QuillTable = await import('quill-table');
-
-        // 注册表格模块
-        Quill.default.register('modules/table', QuillTable.default);
         return RQ;
     },
     { ssr: false }
@@ -52,7 +50,7 @@ export default function NewArticle(){
             [{ list: 'ordered' }, { list: 'bullet' }],
             ['link', 'image'],
             ['clean'],
-            ['insertTable'] // 添加表格插入按钮
+            ['table']// 添加表格插入按钮
         ]
     };
 
