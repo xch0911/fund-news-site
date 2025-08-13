@@ -37,6 +37,7 @@ const ReactQuill = dynamic(
 );
 
 import 'quill/dist/quill.snow.css';
+import 'quill-better-table/dist/quill-better-table.css';
 
 export default function NewArticle(){
     const r = useRouter()
@@ -62,7 +63,6 @@ export default function NewArticle(){
         else await axios.post('/api/articles', payload)
         r.push('/admin/dashboard')
     }
-    const {default: QuillBetterTable} = import('quill-better-table');
     // 配置编辑器模块（包含表格支持）
     const modules = {
         table: true, // 启用表格模块
@@ -73,10 +73,7 @@ export default function NewArticle(){
             ['link', 'image'],
             ['clean'],
             ['insertTable']// 添加表格插入按钮
-        ],
-        keyboard: {
-            bindings: QuillBetterTable.keyboardBindings,
-        },
+        ]
     };
 
     return (
