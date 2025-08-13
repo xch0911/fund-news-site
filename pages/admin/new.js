@@ -3,30 +3,8 @@ import { useState, useEffect } from 'react'
 import { useRouter } from 'next/router'
 import axios from 'axios'
 
-// 动态导入ReactQuill并注册表格模块
-const ReactQuill = dynamic(
-    async () => {
-        const ReactQuill = await import('react-quill');
-        const { Quill } = ReactQuill;
-
-        // 动态导入表格插件
-        const QuillBetterTable = await import('quill-better-table');
-
-        // 注册表格模块
-        Quill.register('modules/table', QuillBetterTable.TableModule);
-
-        return ReactQuill;
-    },
-    {
-        ssr: false,
-        loading: () => <p>加载编辑器...</p>
-    }
-);
-
-// 导入编辑器样式
-import 'react-quill/dist/quill.snow.css';
-// 导入表格插件样式
-import 'quill-better-table/dist/quill-better-table.css';
+const ReactQuill = dynamic(() => import('react-quill'), { ssr: false })
+import 'react-quill/dist/quill.snow.css'
 
 export default function NewArticle(){
     const r = useRouter()
@@ -73,15 +51,7 @@ export default function NewArticle(){
                 <input value={title} onChange={e=>setTitle(e.target.value)} className="w-full p-2 border" placeholder="标题" />
                 <input value={excerpt} onChange={e=>setExcerpt(e.target.value)} className="w-full p-2 border" placeholder="摘要（可选）" />
                 <input value={category} onChange={e=>setCategory(e.target.value)} className="w-full p-2 border" placeholder="分类（可选）" />
-
-                {/* 启用表格模块的编辑器 */}
-                <ReactQuill
-                    value={content}
-                    onChange={setContent}
-                    modules={modules}
-                    placeholder="在此处粘贴表格..."
-                />
-
+                <ReactQuill value={content} onChange={setContent}  modules={modules}  />
                 <div>
                     <button className="px-4 py-2 bg-green-600 text-white rounded">发布</button>
                 </div>
