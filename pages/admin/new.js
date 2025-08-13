@@ -31,6 +31,18 @@ export default function NewArticle(){
         r.push('/admin/dashboard')
     }
 
+    const modules = {
+        table: true, // 启用表格模块
+        toolbar: [
+            [{ header: [1, 2, 3, false] }],
+            ['bold', 'italic', 'underline', 'strike'],
+            [{ list: 'ordered' }, { list: 'bullet' }],
+            ['link', 'image'],
+            ['clean'],
+            ['table']
+        ]
+    };
+
     return (
         <div className="max-w-3xl mx-auto p-6">
             <h2 className="text-2xl font-bold mb-4">{id? '编辑文章' : '新建文章'}</h2>
@@ -38,7 +50,7 @@ export default function NewArticle(){
                 <input value={title} onChange={e=>setTitle(e.target.value)} className="w-full p-2 border" placeholder="标题" />
                 <input value={excerpt} onChange={e=>setExcerpt(e.target.value)} className="w-full p-2 border" placeholder="摘要（可选）" />
                 <input value={category} onChange={e=>setCategory(e.target.value)} className="w-full p-2 border" placeholder="分类（可选）" />
-                <ReactQuill value={content} onChange={setContent} />
+                <ReactQuill value={content} onChange={setContent} modules={modules} />
                 <div>
                     <button className="px-4 py-2 bg-green-600 text-white rounded">发布</button>
                 </div>
