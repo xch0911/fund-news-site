@@ -3,13 +3,9 @@ import { useState, useEffect } from 'react'
 import { useRouter } from 'next/router'
 import axios from 'axios'
 
-// 动态导入 ReactQuill（保持 ssr: false）
+// 动态导入ReactQuill，禁用SSR
 const ReactQuill = dynamic(() => import('react-quill'), { ssr: false })
 import 'react-quill/dist/quill.snow.css'
-
-// 声明变量用于后续存储 Quill 和表格模块（避免服务端报错）
-let Quill
-let TableModule, TableToolbar
 
 export default function NewArticle() {
     const r = useRouter()
@@ -19,47 +15,59 @@ export default function NewArticle() {
     const [category, setCategory] = useState('')
     const [excerpt, setExcerpt] = useState('')
     const [isSubmitting, setIsSubmitting] = useState(false)
-    const [modules, setModules] = useState(null) // 动态初始化工具栏配置
+    const [modules, setModules] = useState(null)
+    const [isLoadingEditor, setIsLoadingEditor] = useState(true)
 
-    // 仅在客户端加载 Quill 和表格模块（useEffect 在服务端不执行）
+    // 仅在客户端动态加载Quill和表格模块
     useEffect(() => {
-        // 动态导入 Quill 和 quill-better-table（客户端环境）
-        import('quill').then(quillModule => {
-            Quill = quillModule.default
-            return Promise.all([
-                import('quill-better-table'),
-                import('quill-better-table/dist/quill-better-table.css')
-            ])
-        }).then(([tableModule]) => {
-            // 提取表格模块
-            TableModule = tableModule.TableModule
-            TableToolbar = tableModule.TableToolbar
+        const loadQuillDependencies = async () => {
+            try {
+                // 首先加载Quill核心
+                const quillModule = await import('quill')
+                const Quill = quillModule.default
 
-            // 注册表格模块（仅在客户端执行）
-            Quill.register({
-                'modules/table': TableModule,
-                'formats/table': TableModule.tableFormat,
-                'formats/cell': TableModule.cellFormat,
-                'formats/row': TableModule.rowFormat,
-                'modules/tableToolbar': TableToolbar
-            }, true)
+                // 然后加载表格插件
+                const tableModule = await import('quill-better-table')
 
-            // 配置工具栏（包含表格按钮）
-            setModules({
-                toolbar: [
-                    ['bold', 'italic', 'underline'],
-                    [{ 'header': [1, 2, 3, false] }],
-                    [{ 'list': 'ordered' }, { 'list': 'bullet' }],
-                    ['link', 'image'],
-                    ['table'] // 表格按钮
-                ],
-                table: true,
-                tableToolbar: true
-            })
-        })
+                // 从表格插件中获取所需模块（注意这里的导出结构可能因版本而异）
+                const { default: TableModule, TableToolbar } = tableModule
+
+                // 注册表格模块
+                Quill.register({
+                    'modules/table': TableModule,
+                    'formats/table': TableModule.tableFormat,
+                    'formats/cell': TableModule.cellFormat,
+                    'formats/row': TableModule.rowFormat,
+                    'modules/tableToolbar': TableToolbar
+                }, true)
+
+                // 配置工具栏
+                setModules({
+                    toolbar: [
+                        ['bold', 'italic', 'underline'],
+                        [{ 'header': [1, 2, 3, false] }],
+                        [{ 'list': 'ordered' }, { 'list': 'bullet' }],
+                        ['link', 'image'],
+                        ['table']
+                    ],
+                    table: true,
+                    tableToolbar: true,
+                    history: {
+                        userOnly: true
+                    }
+                })
+            } catch (error) {
+                console.error('加载富文本编辑器依赖失败:', error)
+                alert('编辑器加载失败，请刷新页面重试')
+            } finally {
+                setIsLoadingEditor(false)
+            }
+        }
+
+        loadQuillDependencies()
     }, [])
 
-    // 其余代码保持不变（useEffect 加载文章、submit 提交逻辑等）
+    // 加载文章数据
     useEffect(() => {
         if (id) {
             axios.get(`/api/articles/${id}`).then(res => {
@@ -74,6 +82,7 @@ export default function NewArticle() {
         }
     }, [id])
 
+    // 提交表单
     async function submit(e) {
         e.preventDefault()
         if (!title.trim()) {
@@ -99,56 +108,65 @@ export default function NewArticle() {
 
     return (
         <div className="max-w-3xl mx-auto p-6">
-          <h2 className="text-2xl font-bold mb-4">{id ? '编辑文章' : '新建文章'}</h2>
-          <form onSubmit={submit} className="space-y-4">
-              {/* 输入框部分保持不变 */}
-            <input
-                value={title}
-                onChange={e => setTitle(e.target.value)}
-                className="w-full p-2 border rounded"
-                placeholder="标题"
-                required
-            />
-            <input
-                value={excerpt}
-                onChange={e => setExcerpt(e.target.value)}
-                className="w-full p-2 border rounded"
-                placeholder="摘要（可选）"
-            />
-            <input
-                value={category}
-                onChange={e => setCategory(e.target.value)}
-                className="w-full p-2 border rounded"
-                placeholder="分类（可选）"
-            />
-              {/* 富文本编辑器：确保 modules 加载完成后再渲染 */}
-              {modules && (
-                  <div className="border rounded p-2">
-                    <ReactQuill
-                        value={content}
-                        onChange={setContent}
-                        modules={modules}
-                        placeholder="请输入文章内容..."
-                    />
-                  </div>
-              )}
-            <div>
-              <button
-                  type="submit"
-                  className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 transition"
-                  disabled={isSubmitting}
-              >
-                  {isSubmitting ? '提交中...' : '发布'}
-              </button>
-              <button
-                  type="button"
-                  className="ml-4 px-4 py-2 bg-gray-200 text-gray-800 rounded hover:bg-gray-300 transition"
-                  onClick={() => r.push('/admin/dashboard')}
-              >
-                取消
-              </button>
-            </div>
-          </form>
+            <h2 className="text-2xl font-bold mb-4">{id ? '编辑文章' : '新建文章'}</h2>
+            <form onSubmit={submit} className="space-y-4">
+                <input
+                    value={title}
+                    onChange={e => setTitle(e.target.value)}
+                    className="w-full p-2 border rounded"
+                    placeholder="标题"
+                    required
+                />
+                <input
+                    value={excerpt}
+                    onChange={e => setExcerpt(e.target.value)}
+                    className="w-full p-2 border rounded"
+                    placeholder="摘要（可选）"
+                />
+                <input
+                    value={category}
+                    onChange={e => setCategory(e.target.value)}
+                    className="w-full p-2 border rounded"
+                    placeholder="分类（可选）"
+                />
+
+                {/* 富文本编辑器 */}
+                {isLoadingEditor ? (
+                    <div className="border rounded p-8 text-center text-gray-500 bg-gray-50">
+                        加载编辑器中...
+                    </div>
+                ) : modules ? (
+                    <div className="border rounded p-2">
+                        <ReactQuill
+                            value={content}
+                            onChange={setContent}
+                            modules={modules}
+                            placeholder="请输入文章内容..."
+                        />
+                    </div>
+                ) : (
+                    <div className="border rounded p-8 text-center text-red-500 bg-red-50">
+                        编辑器加载失败，请刷新页面重试
+                    </div>
+                )}
+
+                <div>
+                    <button
+                        type="submit"
+                        className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 transition"
+                        disabled={isSubmitting}
+                    >
+                        {isSubmitting ? '提交中...' : '发布'}
+                    </button>
+                    <button
+                        type="button"
+                        className="ml-4 px-4 py-2 bg-gray-200 text-gray-800 rounded hover:bg-gray-300 transition"
+                        onClick={() => r.push('/admin/dashboard')}
+                    >
+                        取消
+                    </button>
+                </div>
+            </form>
         </div>
     )
 }
