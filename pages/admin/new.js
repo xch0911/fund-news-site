@@ -33,12 +33,15 @@ const ReactQuill = dynamic(
     async () => {
         // 分步加载依赖
         try {
-            const Quill = await import('quill');
+            const Quill = (await import('quill')).default;
             console.log(Quill)
+
+            const Keyboard = Quill.import('modules/keyboard');
+            Keyboard.default.keyboard.bindings.Backspace = Keyboard.default.keyboard.bindings.Backspace || [];
             const {default: QuillBetterTable} = await import('quill-better-table');
             console.log(QuillBetterTable)
             // 注册模块
-            Quill.default.register('modules/betterTable', QuillBetterTable);
+            Quill.register('modules/betterTable', QuillBetterTable);
 
             const {default: ReactQuillLib} = await import('react-quill');
             console.log(ReactQuillLib)
