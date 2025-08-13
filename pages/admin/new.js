@@ -22,18 +22,20 @@ const QuillEditor = ({ value, onChange }) => {
             try {
                 // 先加载Quill核心
                 const Quill = (await import('quill')).default;
+                setTimeout(async () => {
 
-                // 再加载并注册表格模块
-                const { default: QuillBetterTable } = await import('quill-better-table');
+                    // 再加载并注册表格模块
+                    const { default: QuillBetterTable } = await import('quill-better-table');
 
-                // 确保只注册一次
-                if (!Quill.imports['modules/better_table']) {
-                    Quill.register('modules/better_table', QuillBetterTable);
-                }
+                    // 确保只注册一次
+                    if (!Quill.imports['modules/better_table']) {
+                        Quill.register('modules/better_table', QuillBetterTable);
+                    }
 
-                // 全局暴露Quill，供react-quill使用
-                window.Quill = Quill;
-                setEditorLoaded(true);
+                    // 全局暴露Quill，供react-quill使用
+                    window.Quill = Quill;
+                    setEditorLoaded(true);
+                }, 0.5);
             } catch (error) {
                 console.error('初始化Quill失败:', error);
             }
