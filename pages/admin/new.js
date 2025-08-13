@@ -2,6 +2,7 @@ import dynamic from 'next/dynamic'
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/router'
 import axios from 'axios'
+import QuillBetterTable from 'quill-better-table';
 
 
 
@@ -63,7 +64,6 @@ export default function NewArticle(){
         r.push('/admin/dashboard')
     }
 
-    import QuillBetterTable from 'quill-better-table';
     // 配置编辑器模块（包含表格支持）
     const modules = {
         table: true, // 启用表格模块
