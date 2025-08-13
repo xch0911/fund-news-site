@@ -9,14 +9,14 @@ const ReactQuill = dynamic(
     async () => {
         // 分步加载依赖
         try {
-            const Quill = (await import('quill')).default;
-            console.log(Quill)
-
-            const {default: QuillBetterTable} = await import('quill-better-table');
-            console.log(QuillBetterTable)
-            // 注册模块
-            Quill.register('modules/table', QuillBetterTable);
-            console.log(Quill)
+            // const Quill = (await import('quill')).default;
+            // console.log(Quill)
+            //
+            // const {default: QuillBetterTable} = await import('quill-better-table');
+            // console.log(QuillBetterTable)
+            // // 注册模块
+            // Quill.register('modules/table', QuillBetterTable);
+            // console.log(Quill)
             const {default: ReactQuillLib} = await import('react-quill');
             console.log(ReactQuillLib)
             // 返回ReactQuill组件
@@ -72,7 +72,7 @@ export default function NewArticle(){
             [{ list: 'ordered' }, { list: 'bullet' }],
             ['link', 'image'],
             ['clean'],
-            ['insertTable']// 添加表格插入按钮
+            ['table']// 添加表格插入按钮
         ]
     };
 
