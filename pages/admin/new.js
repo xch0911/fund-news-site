@@ -38,7 +38,7 @@ const ReactQuill = dynamic(
     }
 );
 
-import 'react-quill/dist/quill.snow.css'
+import 'quill/dist/quill.snow.css';
 
 export default function NewArticle(){
     const r = useRouter()
