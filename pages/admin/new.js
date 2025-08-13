@@ -1,48 +1,83 @@
 import dynamic from 'next/dynamic'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useRouter } from 'next/router'
 import axios from 'axios'
 import 'quill/dist/quill.snow.css';
 import 'quill-better-table/dist/quill-better-table.css';
 
-// 先导入Quill和表格模块，确保全局可用
-const loadQuillDependencies = async () => {
-    if (typeof window !== 'undefined') {
-        const Quill = (await import('quill')).default;
-        const { default: QuillBetterTable } = await import('quill-better-table');
-
-        // 确保只注册一次
-        if (!Quill.imports['modules/better_table']) {
-            Quill.register('modules/better_table', QuillBetterTable);
-        }
-
-        return Quill;
-    }
-    return null;
-};
-
-// 动态导入ReactQuill组件
-const ReactQuill = dynamic(
-    async () => {
-        try {
-            // 确保依赖已加载
-            await loadQuillDependencies();
-            const { default: ReactQuillLib } = await import('react-quill');
-            return ReactQuillLib;
-        } catch (e) {
-            console.error('加载失败', e);
-            return () => <div>编辑器加载失败</div>;
-        }
-    },
-    {
-        ssr: false,
-        loading: () => (
-            <div className="p-4 text-center text-gray-500">
-                编辑器加载中，请稍候...
-            </div>
-        )
-    }
+// 动态导入ReactQuill组件，不包含任何初始化逻辑
+const ReactQuillBase = dynamic(
+    () => import('react-quill').then(mod => mod.default),
+    { ssr: false, loading: () => <div>加载中...</div> }
 );
+
+// 封装编辑器组件，确保正确初始化
+const QuillEditor = ({ value, onChange }) => {
+    const [editorLoaded, setEditorLoaded] = useState(false);
+    const quillRef = useRef(null);
+
+    // 在组件挂载后初始化Quill和表格模块
+    useEffect(() => {
+        const initQuill = async () => {
+            try {
+                // 先加载Quill核心
+                const Quill = (await import('quill')).default;
+
+                // 再加载并注册表格模块
+                const { default: QuillBetterTable } = await import('quill-better-table');
+
+                // 确保只注册一次
+                if (!Quill.imports['modules/better_table']) {
+                    Quill.register('modules/better_table', QuillBetterTable);
+                }
+
+                // 全局暴露Quill，供react-quill使用
+                window.Quill = Quill;
+                setEditorLoaded(true);
+            } catch (error) {
+                console.error('初始化Quill失败:', error);
+            }
+        };
+
+        initQuill();
+    }, []);
+
+    // 编辑器模块配置
+    const modules = {
+        better_table: true,
+        toolbar: [
+            [{ header: [1, 2, 3, false] }],
+            ['bold', 'italic', 'underline', 'strike'],
+            [{ list: 'ordered' }, { list: 'bullet' }],
+            ['link', 'image'],
+            ['clean'],
+            [{ 'table': ['insert', 'delete'] }]
+        ]
+    };
+
+    // 格式配置
+    const formats = [
+        'header', 'bold', 'italic', 'underline', 'strike',
+        'list', 'bullet', 'link', 'image',
+        'table', 'better_table'
+    ];
+
+    if (!editorLoaded) {
+        return <div className="p-4 text-center text-gray-500">编辑器加载中...</div>;
+    }
+
+    return (
+        <ReactQuillBase
+            ref={quillRef}
+            value={value}
+            onChange={onChange}
+            modules={modules}
+            formats={formats}
+            theme="snow"
+            className="border rounded"
+        />
+    );
+};
 
 export default function NewArticle() {
     const r = useRouter()
@@ -51,16 +86,6 @@ export default function NewArticle() {
     const [content, setContent] = useState('')
     const [category, setCategory] = useState('')
     const [excerpt, setExcerpt] = useState('')
-    const [quillLoaded, setQuillLoaded] = useState(false);
-
-    // 确保Quill依赖在组件挂载后加载
-    useEffect(() => {
-        const initQuill = async () => {
-            await loadQuillDependencies();
-            setQuillLoaded(true);
-        };
-        initQuill();
-    }, []);
 
     useEffect(() => {
         if (id) {
@@ -81,36 +106,6 @@ export default function NewArticle() {
         else await axios.post('/api/articles', payload)
         r.push('/admin/dashboard')
     }
-
-    // 配置编辑器模块（包含表格支持）
-    const modules = {
-        better_table: {
-            operationMenu: {
-                items: {
-                    unmergeCells: {
-                        text: '合并单元格'
-                    }
-                }
-            }
-        },
-        toolbar: [
-            [{ header: [1, 2, 3, false] }],
-            ['bold', 'italic', 'underline', 'strike'],
-            [{ list: 'ordered' }, { list: 'bullet' }],
-            ['link', 'image'],
-            ['clean'],
-            // 添加表格操作按钮
-            [{ 'table': 'insert' }]
-        ]
-    };
-
-    // 格式配置
-    const formats = [
-        'header', 'bold', 'italic', 'underline', 'strike',
-        'list', 'bullet', 'link', 'image',
-        // 表格相关格式
-        'table', 'better_table'
-    ];
 
     return (
         <div className="max-w-3xl mx-auto p-6">
@@ -135,16 +130,7 @@ export default function NewArticle() {
                     className="w-full p-2 border"
                     placeholder="分类（可选）"
                 />
-                {quillLoaded && (
-                    <ReactQuill
-                        value={content}
-                        onChange={setContent}
-                        modules={modules}
-                        formats={formats}
-                        theme="snow"
-                        className="border rounded"
-                    />
-                )}
+                <QuillEditor value={content} onChange={setContent} />
                 <div>
                     <button className="px-4 py-2 bg-green-600 text-white rounded">发布</button>
                 </div>
