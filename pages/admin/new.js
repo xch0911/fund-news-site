@@ -1,5 +1,5 @@
 import dynamic from 'next/dynamic'
-import { useState, useEffect, useMemo } from 'react'
+import { useState, useEffect, useMemo, useRef } from 'react'
 import { useRouter } from 'next/router'
 import axios from 'axios'
 
@@ -23,6 +23,9 @@ export default function NewArticle(){
     const [content,setContent] = useState('')
     const [category,setCategory] = useState('')
     const [excerpt,setExcerpt] = useState('')
+
+    // 使用 useRef 获取 ReactQuill 实例
+    const quillRef = useRef(null)
 
     // 完全不涉及表格的 Quill 配置
     const modules = useMemo(() => ({
@@ -72,13 +75,18 @@ export default function NewArticle(){
     }
 
     // 获取 Quill 编辑器实例
-    const [quillRef, setQuillRef] = useState(null)
+    const getQuillInstance = () => {
+        return quillRef.current?.getEditor?.()
+    }
 
     // 表格插入函数 - 使用 Quill API
     const insertTable = (rows = 3, cols = 3) => {
-        if (!quillRef) return
+        const quill = getQuillInstance()
+        if (!quill) {
+            console.warn('Quill 编辑器未就绪')
+            return
+        }
 
-        const quill = quillRef.getEditor()
         const range = quill.getSelection()
         const position = range ? range.index : quill.getLength()
 
@@ -92,22 +100,30 @@ export default function NewArticle(){
             }
             tableHTML += '</tr>'
         }
-        tableHTML += '</tbody></table>'
+        tableHTML += '</tbody></table><p><br></p>'
 
         // 使用 clipboard.dangerouslyPasteHTML 插入 HTML
-        quill.clipboard.dangerouslyPasteHTML(position, tableHTML)
-        quill.setSelection(position + tableHTML.length)
+        try {
+            quill.clipboard.dangerouslyPasteHTML(position, tableHTML)
+            quill.setSelection(position + 1)
+        } catch (error) {
+            console.error('插入表格失败:', error)
+            // 回退方案：直接修改内容
+            setContent(prev => prev + '\n' + tableHTML)
+        }
     }
 
     const insertHeaderTable = () => {
-        if (!quillRef) return
+        const quill = getQuillInstance()
+        if (!quill) {
+            console.warn('Quill 编辑器未就绪')
+            return
+        }
 
-        const quill = quillRef.getEditor()
         const range = quill.getSelection()
         const position = range ? range.index : quill.getLength()
 
-        const tableHTML = `
-            <table border="1" style="border-collapse: collapse; width: 100%; margin: 10px 0;">
+        const tableHTML = `<table border="1" style="border-collapse: collapse; width: 100%; margin: 10px 0;">
                 <thead>
                     <tr style="background-color: #f8f9fa;">
                         <th style="padding: 10px; border: 1px solid #ddd; font-weight: bold; text-align: center;">列标题1</th>
@@ -127,11 +143,16 @@ export default function NewArticle(){
                         <td style="padding: 8px; border: 1px solid #ddd;">数据6</td>
                     </tr>
                 </tbody>
-            </table>
-        `
+            </table><p><br></p>`
 
-        quill.clipboard.dangerouslyPasteHTML(position, tableHTML)
-        quill.setSelection(position + tableHTML.length)
+        try {
+            quill.clipboard.dangerouslyPasteHTML(position, tableHTML)
+            quill.setSelection(position + 1)
+        } catch (error) {
+            console.error('插入表格失败:', error)
+            // 回退方案：直接修改内容
+            setContent(prev => prev + '\n' + tableHTML)
+        }
     }
 
     return (
@@ -159,7 +180,7 @@ export default function NewArticle(){
                 />
                 <div className="border border-gray-300 rounded-md">
                     <ReactQuill
-                        ref={setQuillRef}
+                        ref={quillRef}
                         value={content}
                         onChange={setContent}
                         modules={modules}
@@ -228,6 +249,17 @@ export default function NewArticle(){
                 </div>
             </form>
 
+            {/* 使用提示 */}
+            <div className="mt-6 p-4 bg-blue-50 border-l-4 border-blue-400 text-sm text-blue-800">
+                <h4 className="font-semibold mb-2">表格功能说明：</h4>
+                <ul className="space-y-1">
+                    <li>• 使用上方的表格工具按钮插入不同尺寸的表格</li>
+                    <li>• 表格插入后可以直接在编辑器中编辑内容</li>
+                    <li>• 支持在表格单元格中使用富文本格式（加粗、颜色等）</li>
+                    <li>• 可以复制粘贴Excel或其他表格内容</li>
+                    <li>• 表格样式已经预设，确保在前端显示美观</li>
+                </ul>
+            </div>
         </div>
     )
 }
