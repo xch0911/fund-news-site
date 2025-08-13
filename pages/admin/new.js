@@ -71,9 +71,19 @@ export default function NewArticle(){
         }
     }
 
-    // 表格插入函数
+    // 获取 Quill 编辑器实例
+    const [quillRef, setQuillRef] = useState(null)
+
+    // 表格插入函数 - 使用 Quill API
     const insertTable = (rows = 3, cols = 3) => {
-        let tableHTML = `<table border="1" style="border-collapse: collapse; width: 100%; margin: 10px 0; border: 1px solid #ddd;"><tbody>`
+        if (!quillRef) return
+
+        const quill = quillRef.getEditor()
+        const range = quill.getSelection()
+        const position = range ? range.index : quill.getLength()
+
+        // 构建表格 HTML
+        let tableHTML = `<table border="1" style="border-collapse: collapse; width: 100%; margin: 10px 0;"><tbody>`
 
         for(let i = 0; i < rows; i++) {
             tableHTML += '<tr>'
@@ -82,14 +92,22 @@ export default function NewArticle(){
             }
             tableHTML += '</tr>'
         }
+        tableHTML += '</tbody></table>'
 
-        tableHTML += '</tbody></table><p><br></p>'
-        setContent(prev => prev + tableHTML)
+        // 使用 clipboard.dangerouslyPasteHTML 插入 HTML
+        quill.clipboard.dangerouslyPasteHTML(position, tableHTML)
+        quill.setSelection(position + tableHTML.length)
     }
 
     const insertHeaderTable = () => {
+        if (!quillRef) return
+
+        const quill = quillRef.getEditor()
+        const range = quill.getSelection()
+        const position = range ? range.index : quill.getLength()
+
         const tableHTML = `
-            <table border="1" style="border-collapse: collapse; width: 100%; margin: 10px 0; border: 1px solid #ddd;">
+            <table border="1" style="border-collapse: collapse; width: 100%; margin: 10px 0;">
                 <thead>
                     <tr style="background-color: #f8f9fa;">
                         <th style="padding: 10px; border: 1px solid #ddd; font-weight: bold; text-align: center;">列标题1</th>
@@ -109,9 +127,11 @@ export default function NewArticle(){
                         <td style="padding: 8px; border: 1px solid #ddd;">数据6</td>
                     </tr>
                 </tbody>
-            </table><p><br></p>
+            </table>
         `
-        setContent(prev => prev + tableHTML)
+
+        quill.clipboard.dangerouslyPasteHTML(position, tableHTML)
+        quill.setSelection(position + tableHTML.length)
     }
 
     return (
@@ -139,6 +159,7 @@ export default function NewArticle(){
                 />
                 <div className="border border-gray-300 rounded-md">
                     <ReactQuill
+                        ref={setQuillRef}
                         value={content}
                         onChange={setContent}
                         modules={modules}
