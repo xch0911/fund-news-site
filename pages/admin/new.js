@@ -63,6 +63,7 @@ export default function NewArticle(){
         r.push('/admin/dashboard')
     }
 
+    import QuillBetterTable from 'quill-better-table';
     // 配置编辑器模块（包含表格支持）
     const modules = {
         table: true, // 启用表格模块
@@ -73,7 +74,10 @@ export default function NewArticle(){
             ['link', 'image'],
             ['clean'],
             ['insertTable']// 添加表格插入按钮
-        ]
+        ],
+        keyboard: {
+            bindings: QuillBetterTable.keyboardBindings,
+        },
     };
 
     return (
