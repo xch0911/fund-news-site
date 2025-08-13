@@ -3,41 +3,8 @@ import { useState, useEffect } from 'react'
 import { useRouter } from 'next/router'
 import axios from 'axios'
 
-
-
-const ReactQuill = dynamic(
-    async () => {
-        // 分步加载依赖
-        try {
-            // const Quill = (await import('quill')).default;
-            // // console.log(Quill)
-            //
-            // const {default: QuillBetterTable} = await import('quill-better-table');
-            // // console.log(QuillBetterTable)
-            // // 注册模块
-            // Quill.register('modules/better_table', QuillBetterTable);
-            // console.log(Quill)
-            const {default: ReactQuillLib} = await import('react-quill-new');
-            // console.log(ReactQuillLib)
-            // 返回ReactQuill组件
-            return ReactQuillLib
-        } catch (e) {
-            console.error('加载失败', e);
-            return () => <div>编辑器加载失败</div>;
-        }
-    },
-    {
-        ssr: false,
-        loading: () => (
-            <div className="p-4 text-center text-gray-500">
-                编辑器加载中，请稍候...
-            </div>
-        )
-    }
-);
-
-import 'quill/dist/quill.snow.css';
-import 'quill-better-table/dist/quill-better-table.css';
+const ReactQuill = dynamic(() => import('react-quill-new'), { ssr: false })
+import 'react-quill/dist/quill.snow.css'
 
 export default function NewArticle(){
     const r = useRouter()
@@ -63,19 +30,6 @@ export default function NewArticle(){
         else await axios.post('/api/articles', payload)
         r.push('/admin/dashboard')
     }
-    // 配置编辑器模块（包含表格支持）
-    const modules = {
-        table: true, // 启用表格模块
-        toolbar: [
-            [{ header: [1, 2, 3, false] }],
-            ['bold', 'italic', 'underline', 'strike'],
-            [{ list: 'ordered' }, { list: 'bullet' }],
-            ['link', 'image'],
-            ['clean'],
-            ['table'],
-            ['insertTable']// 添加表格插入按钮
-        ]
-    };
 
     return (
         <div className="max-w-3xl mx-auto p-6">
@@ -84,7 +38,7 @@ export default function NewArticle(){
                 <input value={title} onChange={e=>setTitle(e.target.value)} className="w-full p-2 border" placeholder="标题" />
                 <input value={excerpt} onChange={e=>setExcerpt(e.target.value)} className="w-full p-2 border" placeholder="摘要（可选）" />
                 <input value={category} onChange={e=>setCategory(e.target.value)} className="w-full p-2 border" placeholder="分类（可选）" />
-                <ReactQuill value={content} onChange={setContent}  modules={modules}  />
+                <ReactQuill value={content} onChange={setContent} />
                 <div>
                     <button className="px-4 py-2 bg-green-600 text-white rounded">发布</button>
                 </div>
