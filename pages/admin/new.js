@@ -46,7 +46,7 @@ const ReactQuill = dynamic(
         console.log(QuillBetterTable)
         console.log(ReactQuillLib.default)
         // 返回ReactQuill组件
-        return ReactQuillLib.default;
+        return ReactQuillLib;
     },
     {
         ssr: false,
