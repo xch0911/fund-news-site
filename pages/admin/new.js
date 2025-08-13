@@ -12,7 +12,7 @@ const ReactQuill = dynamic(
             const Quill = (await import('quill')).default;
             // console.log(Quill)
 
-            const {default: QuillBetterTable} = await import('quill-better-table-next');
+            const {default: QuillBetterTable} = await import('quill-better-table');
             // console.log(QuillBetterTable)
             // 注册模块
             Quill.register('modules/better_table', QuillBetterTable);
