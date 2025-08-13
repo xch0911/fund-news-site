@@ -4,10 +4,7 @@ import { useRouter } from 'next/router'
 import axios from 'axios'
 import 'react-quill/dist/quill.snow.css'
 
-const ReactQuillDynamic = dynamic(async () => {
-    const RQ = (await import('react-quill')).default
-    return RQ
-}, { ssr: false })
+const ReactQuillDynamic = dynamic(() => import('react-quill'), { ssr: false })
 
 export default function NewArticle() {
     const r = useRouter()
@@ -17,8 +14,6 @@ export default function NewArticle() {
     const [category, setCategory] = useState('')
     const [excerpt, setExcerpt] = useState('')
     const [modules, setModules] = useState(null)
-    const [editorReady, setEditorReady] = useState(false)
-    const [ReactQuill, setReactQuill] = useState(null) // 保存动态导入的组件
 
     useEffect(() => {
         if (id) {
@@ -33,20 +28,12 @@ export default function NewArticle() {
     }, [id])
 
     useEffect(() => {
-        async function loadEditor() {
-            // 动态引入 react-quill
-            const RQ = (await import('react-quill')).default
-            setReactQuill(() => RQ)
-
-            // 从 react-quill 拿 Quill 实例
-            const Quill = RQ.Quill
-
+        async function loadModules() {
+            const Quill = (await import('quill')).default
             const QuillTableBetter = (await import('quill-table-better')).default
             await import('quill-table-better/dist/quill-table-better.css')
 
-            Quill.register({
-                'modules/table-better': QuillTableBetter
-            }, true)
+            Quill.register({ 'modules/table-better': QuillTableBetter }, true)
 
             setModules({
                 toolbar: {
@@ -55,23 +42,22 @@ export default function NewArticle() {
                         ['table-better']
                     ],
                     handlers: {
-                        'table-better': function() {
-                            const tableModule = this.quill.getModule('table-better');
-                            tableModule.insertTable(3, 3);
+                        'table-better': function () {
+                            const tableModule = this.quill.getModule('table-better')
+                            tableModule.insertTable(3, 3)
                         }
                     }
                 },
                 'table-better': {
                     language: 'en_US',
-                    menus: ['column','row','merge','table','cell','wrap','copy','delete'],
+                    menus: ['column', 'row', 'merge', 'table', 'cell', 'wrap', 'copy', 'delete'],
                     toolbarTable: true
                 }
             })
-            setEditorReady(true)
         }
 
         if (typeof window !== 'undefined') {
-            loadEditor()
+            loadModules()
         }
     }, [])
 
@@ -91,8 +77,8 @@ export default function NewArticle() {
                 <input value={excerpt} onChange={e => setExcerpt(e.target.value)} className="w-full p-2 border" placeholder="摘要（可选）" />
                 <input value={category} onChange={e => setCategory(e.target.value)} className="w-full p-2 border" placeholder="分类（可选）" />
 
-                {editorReady && ReactQuill && modules ? (
-                    <ReactQuill value={content} onChange={setContent} modules={modules} />
+                {modules ? (
+                    <ReactQuillDynamic value={content} onChange={setContent} modules={modules} />
                 ) : (
                     <p>编辑器加载中...</p>
                 )}
