@@ -4,9 +4,8 @@ import { useRouter } from 'next/router'
 import axios from 'axios'
 import 'react-quill/dist/quill.snow.css'
 
-// 不直接导入 quill-better-table（会 SSR 报错）
-const ReactQuill = dynamic(async () => {
-    const { default: RQ } = await import('react-quill')
+const ReactQuillDynamic = dynamic(async () => {
+    const RQ = (await import('react-quill')).default
     return RQ
 }, { ssr: false })
 
@@ -17,8 +16,9 @@ export default function NewArticle() {
     const [content, setContent] = useState('')
     const [category, setCategory] = useState('')
     const [excerpt, setExcerpt] = useState('')
-    const [modules, setModules] = useState(null) // 初始为 null
-    const [editorReady, setEditorReady] = useState(false) // 表示模块是否加载完成
+    const [modules, setModules] = useState(null)
+    const [editorReady, setEditorReady] = useState(false)
+    const [ReactQuill, setReactQuill] = useState(null) // 保存动态导入的组件
 
     useEffect(() => {
         if (id) {
@@ -33,8 +33,15 @@ export default function NewArticle() {
     }, [id])
 
     useEffect(() => {
-        async function loadQuillModules() {
-            const Quill = (await import('quill')).default
+        async function loadEditor() {
+            // 动态引入 react-quill
+            const RQ = (await import('react-quill')).default
+            setReactQuill(() => RQ)
+
+            // 从 react-quill 拿 Quill 实例
+            const Quill = RQ.Quill
+
+            // 动态引入表格模块
             const QuillBetterTable = (await import('quill-better-table')).default
             await import('quill-better-table/dist/quill-better-table.css')
 
@@ -46,7 +53,7 @@ export default function NewArticle() {
                 true
             )
 
-            // 设置编辑器工具栏和模块
+            // 配置编辑器工具栏
             setModules({
                 toolbar: {
                     container: [
@@ -84,11 +91,11 @@ export default function NewArticle() {
                 }
             })
 
-            setEditorReady(true) // 表示 ready，可以渲染 ReactQuill
+            setEditorReady(true)
         }
 
         if (typeof window !== 'undefined') {
-            loadQuillModules()
+            loadEditor()
         }
     }, [])
 
@@ -108,7 +115,7 @@ export default function NewArticle() {
                 <input value={excerpt} onChange={e => setExcerpt(e.target.value)} className="w-full p-2 border" placeholder="摘要（可选）" />
                 <input value={category} onChange={e => setCategory(e.target.value)} className="w-full p-2 border" placeholder="分类（可选）" />
 
-                {editorReady && modules ? (
+                {editorReady && ReactQuill && modules ? (
                     <ReactQuill value={content} onChange={setContent} modules={modules} />
                 ) : (
                     <p>编辑器加载中...</p>
