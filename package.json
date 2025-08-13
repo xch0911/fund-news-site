@@ -22,7 +22,7 @@
     "quill-better-table": "^1.2.7",
     "quill-table": "^1.0.0",
     "react-quill": "2.0.0",
-    "quill": "2.0.0"
+    "quill": "1.3.7"
   },
   "devDependencies": {
     "tailwindcss": "3.4.1",
