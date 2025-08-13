@@ -11,7 +11,7 @@ export default function Home({ articles }) {
       </Head>
       <header className="flex justify-between items-center mb-6">
         <h1 className="text-3xl font-bold">基金资讯</h1>
-        <Link href="/admin"><a className="px-3 py-1 border rounded">管理后台</a></Link>
+        {/*<Link href="/admin"><a className="px-3 py-1 border rounded">管理后台</a></Link>*/}
       </header>
 
       <main className="space-y-4">
