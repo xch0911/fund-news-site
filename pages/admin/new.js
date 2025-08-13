@@ -42,13 +42,12 @@ const ReactQuill = dynamic(
 
             const {default: ReactQuillLib} = await import('react-quill');
             console.log(ReactQuillLib)
+            // 返回ReactQuill组件
+            return ReactQuillLib
         } catch (e) {
             console.error('加载失败', e);
             return () => <div>编辑器加载失败</div>;
         }
-
-        // 返回ReactQuill组件
-        return ReactQuillLib
     },
     {
         ssr: false,
