@@ -10,10 +10,10 @@ import 'quill-better-table/dist/quill-better-table.css';
 
 // 动态导入ReactQuill组件
 const ReactQuillBase = dynamic(
-    () => import('react-quill').then(mod => mod.default),
+    () => import('react-quill-new').then(mod => mod.default),
     { ssr: false, loading: () => <div>加载中...</div> }
 );
-
+console.log(ReactQuillBase)
 const QuillEditor = ({ value, onChange }) => {
     const [editorLoaded, setEditorLoaded] = useState(false);
     const [quillInstance, setQuillInstance] = useState(null);
