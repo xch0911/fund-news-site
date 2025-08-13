@@ -17,7 +17,7 @@ const ReactQuill = dynamic(
             // 注册模块
             Quill.register('modules/table', QuillBetterTable);
             console.log(Quill)
-            const {default: ReactQuillLib} = await import('react-quill');
+            const {default: ReactQuillLib} = await import('react-quill-new');
             console.log(ReactQuillLib)
             // 返回ReactQuill组件
             return ReactQuillLib
