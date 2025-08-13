@@ -17,16 +17,12 @@ import axios from 'axios'
 
 const ReactQuill = dynamic(
     async () => {
-        const Quill = (await import('quill')).default;
-        console.log(Quill)
         const { default: QuillBetterTable } = await import('quill-better-table');
-        Quill.register('modules/betterTable', QuillBetterTable);
-        console.log(QuillBetterTable)
-        console.log(Quill)
         const { default: RQ } = await import('react-quill');
-        console.log(RQ)
+        if (!RQ.Quill.import('modules/keyboard').default.keyboard.bindings.Backspace) {
+            RQ.Quill.import('modules/keyboard').default.keyboard.bindings.Backspace = [];
+        }
         RQ.Quill.register('modules/betterTable', QuillBetterTable);
-        console.log(RQ)
         return RQ;
     },
     { ssr: false }
@@ -69,7 +65,15 @@ export default function NewArticle(){
             ['link', 'image'],
             ['clean'],
             ['insertTable']// 添加表格插入按钮
-        ]
+        ],
+        keyboard: {
+            bindings: {
+                Backspace: {
+                    key: 'Backspace',
+                    handler: () => { /* 自定义处理逻辑 */ }
+                }
+            }
+        }
     };
 
     return (
