@@ -72,6 +72,8 @@ export default function NewArticle(){
             [{ list: 'ordered' }, { list: 'bullet' }],
             ['link', 'image'],
             ['clean'],
+            ['table'],
+            ['insertTable1'],
             ['insertTable']// 添加表格插入按钮
         ]
     };
