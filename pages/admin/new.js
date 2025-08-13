@@ -2,18 +2,7 @@ import dynamic from 'next/dynamic'
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/router'
 import axios from 'axios'
-import Quill from 'quill'
-import QuillBetterTable from 'quill-better-table'
 import 'react-quill/dist/quill.snow.css'
-import 'quill-better-table/dist/quill-better-table.css'
-
-// 注册表格模块
-Quill.register(
-    {
-        'modules/better-table': QuillBetterTable
-    },
-    true
-)
 
 const ReactQuill = dynamic(() => import('react-quill'), { ssr: false })
 
@@ -24,6 +13,7 @@ export default function NewArticle() {
     const [content, setContent] = useState('')
     const [category, setCategory] = useState('')
     const [excerpt, setExcerpt] = useState('')
+    const [modules, setModules] = useState({})
 
     useEffect(() => {
         if (id) {
@@ -37,49 +27,69 @@ export default function NewArticle() {
         }
     }, [id])
 
+    useEffect(() => {
+        // 只在浏览器环境加载 QuillBetterTable
+        async function loadQuillModules() {
+            const Quill = (await import('quill')).default
+            const QuillBetterTable = (await import('quill-better-table')).default
+            await import('quill-better-table/dist/quill-better-table.css')
+
+            Quill.register(
+                {
+                    'modules/better-table': QuillBetterTable
+                },
+                true
+            )
+
+            setModules({
+                toolbar: {
+                    container: [
+                        ['bold', 'italic', 'underline', 'strike'],
+                        [{ header: [1, 2, 3, false] }],
+                        [{ list: 'ordered' }, { list: 'bullet' }],
+                        ['link', 'image'],
+                        ['clean'],
+                        ['table'] // 表格按钮
+                    ],
+                    handlers: {
+                        table() {
+                            const tableModule = this.quill.getModule('better-table')
+                            tableModule.insertTable(3, 3)
+                        }
+                    }
+                },
+                'better-table': {
+                    operationMenu: {
+                        items: {
+                            insertColumnRight: { text: '右插列' },
+                            insertColumnLeft: { text: '左插列' },
+                            insertRowUp: { text: '上插行' },
+                            insertRowDown: { text: '下插行' },
+                            mergeCells: { text: '合并单元格' },
+                            unmergeCells: { text: '取消合并' },
+                            deleteColumn: { text: '删除列' },
+                            deleteRow: { text: '删除行' },
+                            deleteTable: { text: '删除表格' }
+                        }
+                    }
+                },
+                keyboard: {
+                    bindings: QuillBetterTable.keyboardBindings
+                }
+            })
+        }
+
+        if (typeof window !== 'undefined') {
+            loadQuillModules()
+        }
+    }, [])
+
     async function submit(e) {
         e.preventDefault()
         const payload = { title, content, category, excerpt }
         if (id) await axios.put(`/api/articles/${id}`, payload)
         else await axios.post('/api/articles', payload)
         r.push('/admin/dashboard')
-    }
-
-    const modules = {
-        toolbar: {
-            container: [
-                ['bold', 'italic', 'underline', 'strike'],
-                [{ header: [1, 2, 3, false] }],
-                [{ list: 'ordered' }, { list: 'bullet' }],
-                ['link', 'image'],
-                ['clean'],
-                ['table'] // 让工具栏出现表格按钮
-            ],
-            handlers: {
-                table() {
-                    const tableModule = this.quill.getModule('better-table')
-                    tableModule.insertTable(3, 3) // 默认插入 3x3 表格
-                }
-            }
-        },
-        'better-table': {
-            operationMenu: {
-                items: {
-                    insertColumnRight: { text: '右插列' },
-                    insertColumnLeft: { text: '左插列' },
-                    insertRowUp: { text: '上插行' },
-                    insertRowDown: { text: '下插行' },
-                    mergeCells: { text: '合并单元格' },
-                    unmergeCells: { text: '取消合并' },
-                    deleteColumn: { text: '删除列' },
-                    deleteRow: { text: '删除行' },
-                    deleteTable: { text: '删除表格' }
-                }
-            }
-        },
-        keyboard: {
-            bindings: QuillBetterTable.keyboardBindings
-        }
     }
 
     return (
@@ -89,7 +99,11 @@ export default function NewArticle() {
                 <input value={title} onChange={e => setTitle(e.target.value)} className="w-full p-2 border" placeholder="标题" />
                 <input value={excerpt} onChange={e => setExcerpt(e.target.value)} className="w-full p-2 border" placeholder="摘要（可选）" />
                 <input value={category} onChange={e => setCategory(e.target.value)} className="w-full p-2 border" placeholder="分类（可选）" />
-                <ReactQuill value={content} onChange={setContent} modules={modules} />
+                {modules.toolbar ? (
+                    <ReactQuill value={content} onChange={setContent} modules={modules} />
+                ) : (
+                    <p>编辑器加载中...</p>
+                )}
                 <div>
                     <button className="px-4 py-2 bg-green-600 text-white rounded">发布</button>
                 </div>
