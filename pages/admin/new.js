@@ -3,11 +3,23 @@ import { useState, useEffect } from 'react'
 import { useRouter } from 'next/router'
 import axios from 'axios'
 
+// const ReactQuill = dynamic(
+//     async () => {
+//         const Quill = (await import('quill')).default;
+//         const { default: QuillTable } = await import('quill-table');
+//         Quill.register('modules/table', QuillTable);
+//         const { default: RQ } = await import('react-quill');
+//         return RQ;
+//     },
+//     { ssr: false }
+// );
+
+
 const ReactQuill = dynamic(
     async () => {
         const Quill = (await import('quill')).default;
-        const { default: QuillTable } = await import('quill-table');
-        Quill.register('modules/table', QuillTable);
+        const { default: QuillBetterTable } = await import('quill-better-table');
+        Quill.register('modules/betterTable', QuillBetterTable);
         const { default: RQ } = await import('react-quill');
         return RQ;
     },
@@ -43,14 +55,14 @@ export default function NewArticle(){
 
     // 配置编辑器模块（包含表格支持）
     const modules = {
-        table: true, // 启用表格模块
+        betterTable: true, // 启用表格模块
         toolbar: [
             [{ header: [1, 2, 3, false] }],
             ['bold', 'italic', 'underline', 'strike'],
             [{ list: 'ordered' }, { list: 'bullet' }],
             ['link', 'image'],
             ['clean'],
-            ['table']// 添加表格插入按钮
+            ['insertTable']// 添加表格插入按钮
         ]
     };
 
