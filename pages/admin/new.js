@@ -41,56 +41,32 @@ export default function NewArticle() {
             // 从 react-quill 拿 Quill 实例
             const Quill = RQ.Quill
 
-            // 动态引入表格模块
-            const QuillBetterTable = (await import('quill-better-table')).default
-            await import('quill-better-table/dist/quill-better-table.css')
+            const QuillTableBetter = (await import('quill-table-better')).default
+            await import('quill-table-better/dist/quill-table-better.css')
 
-            // 注册表格模块
-            Quill.register(
-                {
-                    'modules/better-table': QuillBetterTable
-                },
-                true
-            )
+            Quill.register({
+                'modules/table-better': QuillTableBetter
+            }, true)
 
-            // 配置编辑器工具栏
             setModules({
                 toolbar: {
                     container: [
                         ['bold', 'italic', 'underline', 'strike'],
-                        [{ header: [1, 2, 3, false] }],
-                        [{ list: 'ordered' }, { list: 'bullet' }],
-                        ['link', 'image'],
-                        ['clean'],
-                        ['table']
+                        ['table-better']
                     ],
                     handlers: {
-                        table() {
-                            const tableModule = this.quill.getModule('better-table')
-                            tableModule.insertTable(3, 3)
+                        'table-better': function() {
+                            const tableModule = this.quill.getModule('table-better');
+                            tableModule.insertTable(3, 3);
                         }
                     }
                 },
-                'better-table': {
-                    operationMenu: {
-                        items: {
-                            insertColumnRight: { text: '右插列' },
-                            insertColumnLeft: { text: '左插列' },
-                            insertRowUp: { text: '上插行' },
-                            insertRowDown: { text: '下插行' },
-                            mergeCells: { text: '合并单元格' },
-                            unmergeCells: { text: '取消合并' },
-                            deleteColumn: { text: '删除列' },
-                            deleteRow: { text: '删除行' },
-                            deleteTable: { text: '删除表格' }
-                        }
-                    }
-                },
-                keyboard: {
-                    bindings: QuillBetterTable.keyboardBindings
+                'table-better': {
+                    language: 'en_US',
+                    menus: ['column','row','merge','table','cell','wrap','copy','delete'],
+                    toolbarTable: true
                 }
             })
-
             setEditorReady(true)
         }
 
