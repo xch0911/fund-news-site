@@ -4,7 +4,11 @@ import { useRouter } from 'next/router'
 import axios from 'axios'
 import 'react-quill/dist/quill.snow.css'
 
-const ReactQuill = dynamic(() => import('react-quill'), { ssr: false })
+// 不直接导入 quill-better-table（会 SSR 报错）
+const ReactQuill = dynamic(async () => {
+    const { default: RQ } = await import('react-quill')
+    return RQ
+}, { ssr: false })
 
 export default function NewArticle() {
     const r = useRouter()
@@ -13,7 +17,8 @@ export default function NewArticle() {
     const [content, setContent] = useState('')
     const [category, setCategory] = useState('')
     const [excerpt, setExcerpt] = useState('')
-    const [modules, setModules] = useState({})
+    const [modules, setModules] = useState(null) // 初始为 null
+    const [editorReady, setEditorReady] = useState(false) // 表示模块是否加载完成
 
     useEffect(() => {
         if (id) {
@@ -28,12 +33,12 @@ export default function NewArticle() {
     }, [id])
 
     useEffect(() => {
-        // 只在浏览器环境加载 QuillBetterTable
         async function loadQuillModules() {
             const Quill = (await import('quill')).default
             const QuillBetterTable = (await import('quill-better-table')).default
             await import('quill-better-table/dist/quill-better-table.css')
 
+            // 注册表格模块
             Quill.register(
                 {
                     'modules/better-table': QuillBetterTable
@@ -41,6 +46,7 @@ export default function NewArticle() {
                 true
             )
 
+            // 设置编辑器工具栏和模块
             setModules({
                 toolbar: {
                     container: [
@@ -49,7 +55,7 @@ export default function NewArticle() {
                         [{ list: 'ordered' }, { list: 'bullet' }],
                         ['link', 'image'],
                         ['clean'],
-                        ['table'] // 表格按钮
+                        ['table']
                     ],
                     handlers: {
                         table() {
@@ -77,6 +83,8 @@ export default function NewArticle() {
                     bindings: QuillBetterTable.keyboardBindings
                 }
             })
+
+            setEditorReady(true) // 表示 ready，可以渲染 ReactQuill
         }
 
         if (typeof window !== 'undefined') {
@@ -99,11 +107,13 @@ export default function NewArticle() {
                 <input value={title} onChange={e => setTitle(e.target.value)} className="w-full p-2 border" placeholder="标题" />
                 <input value={excerpt} onChange={e => setExcerpt(e.target.value)} className="w-full p-2 border" placeholder="摘要（可选）" />
                 <input value={category} onChange={e => setCategory(e.target.value)} className="w-full p-2 border" placeholder="分类（可选）" />
-                {modules.toolbar ? (
+
+                {editorReady && modules ? (
                     <ReactQuill value={content} onChange={setContent} modules={modules} />
                 ) : (
                     <p>编辑器加载中...</p>
                 )}
+
                 <div>
                     <button className="px-4 py-2 bg-green-600 text-white rounded">发布</button>
                 </div>
