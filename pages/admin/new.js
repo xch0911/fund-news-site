@@ -37,7 +37,7 @@ const QuillEditor = ({ value, onChange }) => {
 
                 // 确保注册方式正确，使用force:true避免冲突
                 Quill.register({
-                    'modules/better-table': QuillBetterTable
+                    'modules/better_table': QuillBetterTable
                 }, true);
 
                 // 4. 创建自定义键盘绑定处理
