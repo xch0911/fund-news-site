@@ -18,9 +18,12 @@ import axios from 'axios'
 const ReactQuill = dynamic(
     async () => {
         const Quill = (await import('quill')).default;
+        console.log(Quill)
         const { default: QuillBetterTable } = await import('quill-better-table');
         Quill.register('modules/betterTable', QuillBetterTable);
+        console.log(QuillBetterTable)
         const { default: RQ } = await import('react-quill');
+        console.log(RQ)
         return RQ;
     },
     { ssr: false }
