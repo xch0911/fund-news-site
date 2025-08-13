@@ -1,20 +1,35 @@
 import dynamic from 'next/dynamic'
-import { useState, useEffect, useMemo, useRef } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { useRouter } from 'next/router'
 import axios from 'axios'
 
-// 简单的动态导入，不涉及任何表格模块
-const ReactQuill = dynamic(() => import('react-quill'), {
-    ssr: false,
-    loading: () => <div className="h-64 bg-gray-100 animate-pulse rounded-md flex items-center justify-center">
-        <span className="text-gray-500">加载编辑器中...</span>
-    </div>
-})
+// 动态导入 ReactQuill 和相关模块
+const ReactQuill = dynamic(
+    async () => {
+        const { default: RQ } = await import('react-quill')
+
+        // 动态导入 Quill 和表格模块
+        const { default: Quill } = await import('quill')
+
+        // 注册表格模块 - 使用 Quill 内置的表格功能
+        const Table = Quill.import('formats/table')
+        const TableCell = Quill.import('formats/table-cell-line')
+        const TableRow = Quill.import('formats/table-row')
+        const TableBody = Quill.import('formats/table-body')
+        const TableCol = Quill.import('formats/table-col')
+        const TableColGroup = Quill.import('formats/table-col-group')
+        const TableContainer = Quill.import('formats/table-container')
+
+        return RQ
+    },
+    {
+        ssr: false,
+        loading: () => <div className="h-64 bg-gray-100 animate-pulse rounded"></div>
+    }
+)
 
 // 动态导入样式
-if (typeof window !== 'undefined') {
-    import('react-quill/dist/quill.snow.css')
-}
+import('react-quill/dist/quill.snow.css')
 
 export default function NewArticle(){
     const r = useRouter()
@@ -24,10 +39,7 @@ export default function NewArticle(){
     const [category,setCategory] = useState('')
     const [excerpt,setExcerpt] = useState('')
 
-    // 使用 useRef 获取 ReactQuill 实例
-    const quillRef = useRef(null)
-
-    // 完全不涉及表格的 Quill 配置
+    // 配置 Quill 编辑器的工具栏和模块
     const modules = useMemo(() => ({
         toolbar: [
             [{ 'header': [1, 2, 3, 4, 5, 6, false] }],
@@ -74,85 +86,50 @@ export default function NewArticle(){
         }
     }
 
-    // 获取 Quill 编辑器实例
-    const getQuillInstance = () => {
-        return quillRef.current?.getEditor?.()
+    // 插入表格的函数
+    const insertTable = () => {
+        const tableHTML = `
+            <table border="1" style="border-collapse: collapse; width: 100%; margin: 10px 0;">
+                <tbody>
+                    <tr>
+                        <td style="padding: 8px; border: 1px solid #ddd;">单元格 1</td>
+                        <td style="padding: 8px; border: 1px solid #ddd;">单元格 2</td>
+                        <td style="padding: 8px; border: 1px solid #ddd;">单元格 3</td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 8px; border: 1px solid #ddd;">单元格 4</td>
+                        <td style="padding: 8px; border: 1px solid #ddd;">单元格 5</td>
+                        <td style="padding: 8px; border: 1px solid #ddd;">单元格 6</td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 8px; border: 1px solid #ddd;">单元格 7</td>
+                        <td style="padding: 8px; border: 1px solid #ddd;">单元格 8</td>
+                        <td style="padding: 8px; border: 1px solid #ddd;">单元格 9</td>
+                    </tr>
+                </tbody>
+            </table>
+        `
+        setContent(prev => prev + tableHTML)
     }
 
-    // 表格插入函数 - 使用 Quill API
-    const insertTable = (rows = 3, cols = 3) => {
-        const quill = getQuillInstance()
-        if (!quill) {
-            console.warn('Quill 编辑器未就绪')
-            return
-        }
-
-        const range = quill.getSelection()
-        const position = range ? range.index : quill.getLength()
-
-        // 构建表格 HTML
-        let tableHTML = `<table border="1" style="border-collapse: collapse; width: 100%; margin: 10px 0;"><tbody>`
-
-        for(let i = 0; i < rows; i++) {
-            tableHTML += '<tr>'
-            for(let j = 0; j < cols; j++) {
-                tableHTML += `<td style="padding: 8px; border: 1px solid #ddd; min-width: 100px;">单元格 ${i * cols + j + 1}</td>`
-            }
-            tableHTML += '</tr>'
-        }
-        tableHTML += '</tbody></table><p><br></p>'
-
-        // 使用 clipboard.dangerouslyPasteHTML 插入 HTML
-        try {
-            quill.clipboard.dangerouslyPasteHTML(position, tableHTML)
-            quill.setSelection(position + 1)
-        } catch (error) {
-            console.error('插入表格失败:', error)
-            // 回退方案：直接修改内容
-            setContent(prev => prev + '\n' + tableHTML)
-        }
-    }
-
-    const insertHeaderTable = () => {
-        const quill = getQuillInstance()
-        if (!quill) {
-            console.warn('Quill 编辑器未就绪')
-            return
-        }
-
-        const range = quill.getSelection()
-        const position = range ? range.index : quill.getLength()
-
-        const tableHTML = `<table border="1" style="border-collapse: collapse; width: 100%; margin: 10px 0;">
+    const insertSimpleTable = () => {
+        const simpleTable = `
+            <table border="1" cellpadding="5" cellspacing="0" style="border-collapse: collapse; margin: 10px 0;">
                 <thead>
-                    <tr style="background-color: #f8f9fa;">
-                        <th style="padding: 10px; border: 1px solid #ddd; font-weight: bold; text-align: center;">列标题1</th>
-                        <th style="padding: 10px; border: 1px solid #ddd; font-weight: bold; text-align: center;">列标题2</th>
-                        <th style="padding: 10px; border: 1px solid #ddd; font-weight: bold; text-align: center;">列标题3</th>
+                    <tr style="background-color: #f5f5f5;">
+                        <th style="padding: 8px; border: 1px solid #ddd;">标题1</th>
+                        <th style="padding: 8px; border: 1px solid #ddd;">标题2</th>
                     </tr>
                 </thead>
                 <tbody>
                     <tr>
-                        <td style="padding: 8px; border: 1px solid #ddd;">数据1</td>
-                        <td style="padding: 8px; border: 1px solid #ddd;">数据2</td>
-                        <td style="padding: 8px; border: 1px solid #ddd;">数据3</td>
-                    </tr>
-                    <tr>
-                        <td style="padding: 8px; border: 1px solid #ddd;">数据4</td>
-                        <td style="padding: 8px; border: 1px solid #ddd;">数据5</td>
-                        <td style="padding: 8px; border: 1px solid #ddd;">数据6</td>
+                        <td style="padding: 8px; border: 1px solid #ddd;">内容1</td>
+                        <td style="padding: 8px; border: 1px solid #ddd;">内容2</td>
                     </tr>
                 </tbody>
-            </table><p><br></p>`
-
-        try {
-            quill.clipboard.dangerouslyPasteHTML(position, tableHTML)
-            quill.setSelection(position + 1)
-        } catch (error) {
-            console.error('插入表格失败:', error)
-            // 回退方案：直接修改内容
-            setContent(prev => prev + '\n' + tableHTML)
-        }
+            </table>
+        `
+        setContent(prev => prev + simpleTable)
     }
 
     return (
@@ -180,7 +157,6 @@ export default function NewArticle(){
                 />
                 <div className="border border-gray-300 rounded-md">
                     <ReactQuill
-                        ref={quillRef}
                         value={content}
                         onChange={setContent}
                         modules={modules}
@@ -190,46 +166,22 @@ export default function NewArticle(){
                     />
                 </div>
 
-                {/* 表格插入工具栏 */}
-                <div className="bg-gray-50 p-4 rounded-md border">
-                    <h4 className="font-medium text-gray-700 mb-3">表格工具</h4>
-                    <div className="flex flex-wrap gap-2">
-                        <button
-                            type="button"
-                            onClick={() => insertTable(2, 2)}
-                            className="px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded text-sm transition-colors"
-                        >
-                            2×2 表格
-                        </button>
-                        <button
-                            type="button"
-                            onClick={() => insertTable(3, 3)}
-                            className="px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded text-sm transition-colors"
-                        >
-                            3×3 表格
-                        </button>
-                        <button
-                            type="button"
-                            onClick={() => insertTable(4, 4)}
-                            className="px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded text-sm transition-colors"
-                        >
-                            4×4 表格
-                        </button>
-                        <button
-                            type="button"
-                            onClick={insertHeaderTable}
-                            className="px-3 py-2 bg-green-600 hover:bg-green-700 text-white rounded text-sm transition-colors"
-                        >
-                            带标题表格
-                        </button>
-                        <button
-                            type="button"
-                            onClick={() => insertTable(5, 2)}
-                            className="px-3 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded text-sm transition-colors"
-                        >
-                            列表表格 (5×2)
-                        </button>
-                    </div>
+                {/* 手动添加表格按钮 */}
+                <div className="flex gap-2 mt-4">
+                    <button
+                        type="button"
+                        onClick={insertTable}
+                        className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md text-sm transition-colors"
+                    >
+                        插入表格 (3x3)
+                    </button>
+                    <button
+                        type="button"
+                        onClick={insertSimpleTable}
+                        className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-md text-sm transition-colors"
+                    >
+                        插入简单表格
+                    </button>
                 </div>
 
                 <div className="flex gap-3 pt-4">
@@ -249,15 +201,14 @@ export default function NewArticle(){
                 </div>
             </form>
 
-            {/* 使用提示 */}
+            {/* 表格使用提示 */}
             <div className="mt-6 p-4 bg-blue-50 border-l-4 border-blue-400 text-sm text-blue-800">
-                <h4 className="font-semibold mb-2">表格功能说明：</h4>
+                <h4 className="font-semibold mb-2">表格功能使用提示：</h4>
                 <ul className="space-y-1">
-                    <li>• 使用上方的表格工具按钮插入不同尺寸的表格</li>
+                    <li>• 点击上方的"插入表格"按钮来添加表格</li>
                     <li>• 表格插入后可以直接在编辑器中编辑内容</li>
-                    <li>• 支持在表格单元格中使用富文本格式（加粗、颜色等）</li>
-                    <li>• 可以复制粘贴Excel或其他表格内容</li>
-                    <li>• 表格样式已经预设，确保在前端显示美观</li>
+                    <li>• 支持复制粘贴表格内容</li>
+                    <li>• 可以手动调整表格的HTML代码来自定义样式</li>
                 </ul>
             </div>
         </div>
