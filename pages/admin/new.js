@@ -33,6 +33,9 @@ const ReactQuill = dynamic(
     async () => {
         // 分步加载依赖
         const Quill = await import('quill');
+        if (!Quill.import('modules/keyboard').default.keyboard.bindings.Backspace) {
+            Quill.import('modules/keyboard').default.keyboard.bindings.Backspace = [];
+        }
         console.log(Quill)
         const ReactQuillLib = await import('react-quill');
         console.log(ReactQuillLib)
