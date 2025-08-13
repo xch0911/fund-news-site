@@ -32,21 +32,26 @@ import axios from 'axios'
 const ReactQuill = dynamic(
     async () => {
         // 分步加载依赖
-        const Quill = await import('quill');
-        if (!Quill.import('modules/keyboard').default.keyboard.bindings.Backspace) {
-            Quill.import('modules/keyboard').default.keyboard.bindings.Backspace = [];
-        }
-        console.log(Quill)
-        const ReactQuillLib = await import('react-quill');
-        console.log(ReactQuillLib)
-        const { default: QuillBetterTable } = await import('quill-better-table');
+        try {
+            const Quill = await import('quill');
+            if (!Quill.import('modules/keyboard').default.keyboard.bindings.Backspace) {
+                Quill.import('modules/keyboard').default.keyboard.bindings.Backspace = [];
+            }
+            console.log(Quill)
+            const {default: QuillBetterTable} = await import('quill-better-table');
+            console.log(QuillBetterTable)
+            // 注册模块
+            Quill.default.register('modules/betterTable', QuillBetterTable);
 
-        // 注册模块
-        Quill.default.register('modules/betterTable', QuillBetterTable);
-        console.log(QuillBetterTable)
-        console.log(ReactQuillLib.default)
+            const {default: ReactQuillLib} = await import('react-quill');
+            console.log(ReactQuillLib)
+        } catch (e) {
+            console.error('加载失败', e);
+            return () => <div>编辑器加载失败</div>;
+        }
+
         // 返回ReactQuill组件
-        return import('react-quill');
+        return ReactQuillLib
     },
     {
         ssr: false,
