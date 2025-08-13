@@ -34,9 +34,6 @@ const ReactQuill = dynamic(
         // 分步加载依赖
         try {
             const Quill = await import('quill');
-            if (!Quill.import('modules/keyboard').default.keyboard.bindings.Backspace) {
-                Quill.import('modules/keyboard').default.keyboard.bindings.Backspace = [];
-            }
             console.log(Quill)
             const {default: QuillBetterTable} = await import('quill-better-table');
             console.log(QuillBetterTable)
