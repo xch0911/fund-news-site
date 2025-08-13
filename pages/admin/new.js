@@ -3,8 +3,33 @@ import { useState, useEffect, useMemo } from 'react'
 import { useRouter } from 'next/router'
 import axios from 'axios'
 
-const ReactQuill = dynamic(() => import('react-quill'), { ssr: false })
-import 'react-quill/dist/quill.snow.css'
+// 动态导入 ReactQuill 和相关模块
+const ReactQuill = dynamic(
+    async () => {
+        const { default: RQ } = await import('react-quill')
+
+        // 动态导入 Quill 和表格模块
+        const { default: Quill } = await import('quill')
+
+        // 注册表格模块 - 使用 Quill 内置的表格功能
+        const Table = Quill.import('formats/table')
+        const TableCell = Quill.import('formats/table-cell-line')
+        const TableRow = Quill.import('formats/table-row')
+        const TableBody = Quill.import('formats/table-body')
+        const TableCol = Quill.import('formats/table-col')
+        const TableColGroup = Quill.import('formats/table-col-group')
+        const TableContainer = Quill.import('formats/table-container')
+
+        return RQ
+    },
+    {
+        ssr: false,
+        loading: () => <div className="h-64 bg-gray-100 animate-pulse rounded"></div>
+    }
+)
+
+// 动态导入样式
+import('react-quill/dist/quill.snow.css')
 
 export default function NewArticle(){
     const r = useRouter()
@@ -26,12 +51,8 @@ export default function NewArticle(){
                 { 'indent': '-1'}, { 'indent': '+1' }],
             [{ 'align': [] }],
             ['link', 'image', 'video'],
-            // 添加表格功能
-            ['table'],
             ['clean']
-        ],
-        // 启用表格模块
-        table: true,
+        ]
     }), [])
 
     const formats = [
@@ -40,8 +61,7 @@ export default function NewArticle(){
         'color', 'background',
         'list', 'bullet', 'indent',
         'align',
-        'link', 'image', 'video',
-        'table' // 添加表格格式支持
+        'link', 'image', 'video'
     ]
 
     useEffect(()=>{
@@ -64,6 +84,52 @@ export default function NewArticle(){
             console.error('保存文章失败:', error)
             alert('保存失败，请重试')
         }
+    }
+
+    // 插入表格的函数
+    const insertTable = () => {
+        const tableHTML = `
+            <table border="1" style="border-collapse: collapse; width: 100%; margin: 10px 0;">
+                <tbody>
+                    <tr>
+                        <td style="padding: 8px; border: 1px solid #ddd;">单元格 1</td>
+                        <td style="padding: 8px; border: 1px solid #ddd;">单元格 2</td>
+                        <td style="padding: 8px; border: 1px solid #ddd;">单元格 3</td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 8px; border: 1px solid #ddd;">单元格 4</td>
+                        <td style="padding: 8px; border: 1px solid #ddd;">单元格 5</td>
+                        <td style="padding: 8px; border: 1px solid #ddd;">单元格 6</td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 8px; border: 1px solid #ddd;">单元格 7</td>
+                        <td style="padding: 8px; border: 1px solid #ddd;">单元格 8</td>
+                        <td style="padding: 8px; border: 1px solid #ddd;">单元格 9</td>
+                    </tr>
+                </tbody>
+            </table>
+        `
+        setContent(prev => prev + tableHTML)
+    }
+
+    const insertSimpleTable = () => {
+        const simpleTable = `
+            <table border="1" cellpadding="5" cellspacing="0" style="border-collapse: collapse; margin: 10px 0;">
+                <thead>
+                    <tr style="background-color: #f5f5f5;">
+                        <th style="padding: 8px; border: 1px solid #ddd;">标题1</th>
+                        <th style="padding: 8px; border: 1px solid #ddd;">标题2</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td style="padding: 8px; border: 1px solid #ddd;">内容1</td>
+                        <td style="padding: 8px; border: 1px solid #ddd;">内容2</td>
+                    </tr>
+                </tbody>
+            </table>
+        `
+        setContent(prev => prev + simpleTable)
     }
 
     return (
@@ -99,6 +165,25 @@ export default function NewArticle(){
                         placeholder="开始编写你的文章内容..."
                     />
                 </div>
+
+                {/* 手动添加表格按钮 */}
+                <div className="flex gap-2 mt-4">
+                    <button
+                        type="button"
+                        onClick={insertTable}
+                        className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md text-sm transition-colors"
+                    >
+                        插入表格 (3x3)
+                    </button>
+                    <button
+                        type="button"
+                        onClick={insertSimpleTable}
+                        className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-md text-sm transition-colors"
+                    >
+                        插入简单表格
+                    </button>
+                </div>
+
                 <div className="flex gap-3 pt-4">
                     <button
                         type="submit"
@@ -120,9 +205,10 @@ export default function NewArticle(){
             <div className="mt-6 p-4 bg-blue-50 border-l-4 border-blue-400 text-sm text-blue-800">
                 <h4 className="font-semibold mb-2">表格功能使用提示：</h4>
                 <ul className="space-y-1">
-                    <li>• 点击工具栏中的表格图标插入表格</li>
-                    <li>• 右键点击表格可以添加/删除行列</li>
-                    <li>• 可以调整表格的对齐方式和样式</li>
+                    <li>• 点击上方的"插入表格"按钮来添加表格</li>
+                    <li>• 表格插入后可以直接在编辑器中编辑内容</li>
+                    <li>• 支持复制粘贴表格内容</li>
+                    <li>• 可以手动调整表格的HTML代码来自定义样式</li>
                 </ul>
             </div>
         </div>
