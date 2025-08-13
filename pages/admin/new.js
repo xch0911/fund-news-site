@@ -12,9 +12,7 @@ const ReactQuill = dynamic(
             const Quill = (await import('quill')).default;
             console.log(Quill)
 
-            // const Keyboard = Quill.import('modules/keyboard');
-            // Keyboard.default.keyboard.bindings.Backspace = Keyboard.default.keyboard.bindings.Backspace || [];
-            const {default: QuillBetterTable} = await import('quill-table');
+            const {default: QuillBetterTable} = await import('quill-better-table');
             console.log(QuillBetterTable)
             // 注册模块
             Quill.register('modules/table', QuillBetterTable);
@@ -74,7 +72,7 @@ export default function NewArticle(){
             [{ list: 'ordered' }, { list: 'bullet' }],
             ['link', 'image'],
             ['clean'],
-            ['table']// 添加表格插入按钮
+            ['insertTable']// 添加表格插入按钮
         ]
     };
 
