@@ -4,27 +4,54 @@ import { useRouter } from 'next/router'
 import axios from 'axios'
 
 
+// const ReactQuill = dynamic(
+//     async () => {
+//         // 1. 加载 Quill 核心
+//         const Quill = (await import('quill')).default;
+//
+//         // 2. 修复键盘绑定
+//         if (!Quill.import('modules/keyboard').default.keyboard.bindings.Backspace) {
+//             Quill.import('modules/keyboard').default.keyboard.bindings.Backspace = [];
+//         }
+//
+//         // 3. 注册表格模块
+//         const { default: QuillBetterTable } = await import('quill-better-table');
+//         Quill.register('modules/betterTable', QuillBetterTable);
+//
+//         // 4. 加载 ReactQuill
+//         const { default: RQ } = await import('react-quill');
+//         return RQ;
+//     },
+//     {
+//         ssr: false,
+//         loading: () => <p>加载编辑器中...</p> // 加载状态提示
+//     }
+// );
+
+
 const ReactQuill = dynamic(
     async () => {
-        // 1. 加载 Quill 核心
-        const Quill = (await import('quill')).default;
-
-        // 2. 修复键盘绑定
-        if (!Quill.import('modules/keyboard').default.keyboard.bindings.Backspace) {
-            Quill.import('modules/keyboard').default.keyboard.bindings.Backspace = [];
-        }
-
-        // 3. 注册表格模块
+        // 分步加载依赖
+        const Quill = await import('quill');
+        console.log(Quill)
+        const ReactQuillLib = await import('react-quill');
+        console.log(ReactQuillLib)
         const { default: QuillBetterTable } = await import('quill-better-table');
-        Quill.register('modules/betterTable', QuillBetterTable);
 
-        // 4. 加载 ReactQuill
-        const { default: RQ } = await import('react-quill');
-        return RQ;
+        // 注册模块
+        Quill.default.register('modules/betterTable', QuillBetterTable);
+        console.log(QuillBetterTable)
+        console.log(ReactQuillLib.default)
+        // 返回ReactQuill组件
+        return ReactQuillLib.default;
     },
     {
         ssr: false,
-        loading: () => <p>加载编辑器中...</p> // 加载状态提示
+        loading: () => (
+            <div className="p-4 text-center text-gray-500">
+                编辑器加载中，请稍候...
+            </div>
+        )
     }
 );
 
