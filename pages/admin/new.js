@@ -9,14 +9,14 @@ const ReactQuill = dynamic(
     async () => {
         // 分步加载依赖
         try {
-            // const Quill = (await import('quill')).default;
-            // console.log(Quill)
-            //
-            // const {default: QuillBetterTable} = await import('quill-better-table');
-            // console.log(QuillBetterTable)
-            // // 注册模块
-            // Quill.register('modules/table', QuillBetterTable);
-            // console.log(Quill)
+            const Quill = (await import('quill')).default;
+            console.log(Quill)
+
+            const {default: QuillBetterTable} = await import('quill-better-table');
+            console.log(QuillBetterTable)
+            // 注册模块
+            Quill.register('modules/better_table', QuillBetterTable);
+            console.log(Quill)
             const {default: ReactQuillLib} = await import('react-quill');
             console.log(ReactQuillLib)
             // 返回ReactQuill组件
@@ -65,14 +65,13 @@ export default function NewArticle(){
     }
     // 配置编辑器模块（包含表格支持）
     const modules = {
-        table: true, // 启用表格模块
+        better_table: true, // 启用表格模块
         toolbar: [
             [{ header: [1, 2, 3, false] }],
             ['bold', 'italic', 'underline', 'strike'],
             [{ list: 'ordered' }, { list: 'bullet' }],
             ['link', 'image'],
             ['clean'],
-            ['table']// 添加表格插入按钮
         ]
     };
 
