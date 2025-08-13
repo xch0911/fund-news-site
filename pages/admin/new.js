@@ -22,7 +22,10 @@ const ReactQuill = dynamic(
         const { default: QuillBetterTable } = await import('quill-better-table');
         Quill.register('modules/betterTable', QuillBetterTable);
         console.log(QuillBetterTable)
+        console.log(Quill)
         const { default: RQ } = await import('react-quill');
+        console.log(RQ)
+        RQ.Quill.register('modules/betterTable', QuillBetterTable);
         console.log(RQ)
         return RQ;
     },
