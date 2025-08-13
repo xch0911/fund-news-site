@@ -3,29 +3,29 @@ import { useState, useEffect } from 'react'
 import { useRouter } from 'next/router'
 import axios from 'axios'
 
-// const ReactQuill = dynamic(
-//     async () => {
-//         const Quill = (await import('quill')).default;
-//         const { default: QuillTable } = await import('quill-table');
-//         Quill.register('modules/table', QuillTable);
-//         const { default: RQ } = await import('react-quill');
-//         return RQ;
-//     },
-//     { ssr: false }
-// );
-
 
 const ReactQuill = dynamic(
     async () => {
-        const { default: QuillBetterTable } = await import('quill-better-table');
-        const { default: RQ } = await import('react-quill');
-        if (!RQ.Quill.import('modules/keyboard').default.keyboard.bindings.Backspace) {
-            RQ.Quill.import('modules/keyboard').default.keyboard.bindings.Backspace = [];
+        // 1. 加载 Quill 核心
+        const Quill = (await import('quill')).default;
+
+        // 2. 修复键盘绑定
+        if (!Quill.import('modules/keyboard').default.keyboard.bindings.Backspace) {
+            Quill.import('modules/keyboard').default.keyboard.bindings.Backspace = [];
         }
-        RQ.Quill.register('modules/betterTable', QuillBetterTable);
+
+        // 3. 注册表格模块
+        const { default: QuillBetterTable } = await import('quill-better-table');
+        Quill.register('modules/betterTable', QuillBetterTable);
+
+        // 4. 加载 ReactQuill
+        const { default: RQ } = await import('react-quill');
         return RQ;
     },
-    { ssr: false }
+    {
+        ssr: false,
+        loading: () => <p>加载编辑器中...</p> // 加载状态提示
+    }
 );
 
 import 'react-quill/dist/quill.snow.css'
