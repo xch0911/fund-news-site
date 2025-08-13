@@ -4,30 +4,6 @@ import { useRouter } from 'next/router'
 import axios from 'axios'
 
 
-// const ReactQuill = dynamic(
-//     async () => {
-//         // 1. 加载 Quill 核心
-//         const Quill = (await import('quill')).default;
-//
-//         // 2. 修复键盘绑定
-//         if (!Quill.import('modules/keyboard').default.keyboard.bindings.Backspace) {
-//             Quill.import('modules/keyboard').default.keyboard.bindings.Backspace = [];
-//         }
-//
-//         // 3. 注册表格模块
-//         const { default: QuillBetterTable } = await import('quill-better-table');
-//         Quill.register('modules/betterTable', QuillBetterTable);
-//
-//         // 4. 加载 ReactQuill
-//         const { default: RQ } = await import('react-quill');
-//         return RQ;
-//     },
-//     {
-//         ssr: false,
-//         loading: () => <p>加载编辑器中...</p> // 加载状态提示
-//     }
-// );
-
 
 const ReactQuill = dynamic(
     async () => {
@@ -38,10 +14,10 @@ const ReactQuill = dynamic(
 
             // const Keyboard = Quill.import('modules/keyboard');
             // Keyboard.default.keyboard.bindings.Backspace = Keyboard.default.keyboard.bindings.Backspace || [];
-            const {default: QuillBetterTable} = await import('quill-better-table');
+            const {default: QuillBetterTable} = await import('quill-table');
             console.log(QuillBetterTable)
             // 注册模块
-            Quill.register('modules/betterTable', QuillBetterTable);
+            Quill.register('modules/table', QuillBetterTable);
             console.log(Quill)
             const {default: ReactQuillLib} = await import('react-quill');
             console.log(ReactQuillLib)
@@ -91,14 +67,14 @@ export default function NewArticle(){
 
     // 配置编辑器模块（包含表格支持）
     const modules = {
-        betterTable: true, // 启用表格模块
+        table: true, // 启用表格模块
         toolbar: [
             [{ header: [1, 2, 3, false] }],
             ['bold', 'italic', 'underline', 'strike'],
             [{ list: 'ordered' }, { list: 'bullet' }],
             ['link', 'image'],
             ['clean'],
-            ['insertTable']// 添加表格插入按钮
+            ['table']// 添加表格插入按钮
         ]
     };
 
