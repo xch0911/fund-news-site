@@ -62,11 +62,11 @@ export default function Home({ articles, currentPage, totalPages }) {
     return (
         <div className="max-w-4xl mx-auto p-6">
             <Head>
-                <title>亚洲基金网 - 首页</title>
+                <title>亚洲基金研究 - 首页</title>
                 <meta name="description" content="基金市场新闻、政策解读与产品分析" />
             </Head>
             <header className="flex justify-between items-center mb-6">
-                <h1 className="text-3xl font-bold">亚洲基金网</h1>
+                <h1 className="text-3xl font-bold">亚洲基金研究</h1>
                 {/*<Link href="/admin"><a className="px-3 py-1 border rounded">管理后台</a></Link>*/}
             </header>
 

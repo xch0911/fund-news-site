@@ -6,7 +6,7 @@ export default function Article({ article }) {
   return (
     <div className="max-w-3xl mx-auto p-6">
       <Head>
-        <title>{article.title} - 亚洲基金网</title>
+        <title>{article.title} - 亚洲基金研究</title>
         <meta name="description" content={article.excerpt || article.title} />
       </Head>
       {article.coverUrl && <img src={article.coverUrl} alt="cover" className="mb-4 w-full rounded" />}
