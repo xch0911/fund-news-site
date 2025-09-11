@@ -1,6 +1,6 @@
 import prisma from '../../../lib/prisma'
 import bcrypt from 'bcryptjs'
-import { signToken, setTokenCookie } from '../../../lib/auth'
+import { generateToken, setTokenCookie } from '../../../lib/auth'
 
 export default async function handler(req,res){
   if(req.method !== 'POST') return res.status(405).end()
@@ -12,7 +12,7 @@ export default async function handler(req,res){
 
   const hash = await bcrypt.hash(password, 10)
   const user = await prisma.user.create({ data: { username, passwordHash: hash, role: role || 'editor' } })
-  const token = signToken({ id: user.id, username: user.username, role: user.role })
+  const token = generateToken({ id: user.id, username: user.username, role: user.role })
   setTokenCookie(res, token)
   res.json({ ok: true, user: { id: user.id, username: user.username, role: user.role } })
 }
