@@ -1,8 +1,9 @@
 import useSWR from 'swr'
 import axios from 'axios'
 import { useState } from 'react'
+import withAuth from '../components/withAuth'  // 导入权限组件
 
-export default function Users(){
+function Users(){
   const { data: users, mutate } = useSWR('/api/users')
   const [u, setU] = useState('')
   const [p, setP] = useState('')
@@ -47,3 +48,5 @@ export default function Users(){
     </div>
   )
 }
+
+export default withAuth(Users)  // 使用权限组件包装

@@ -2,8 +2,9 @@ import useSWR from 'swr'
 import Link from 'next/link'
 import axios from 'axios'
 import { useState } from 'react'
+import withAuth from '../components/withAuth'  // 导入权限组件
 
-export default function Dashboard() {
+function Dashboard() {
     const [currentPage, setCurrentPage] = useState(1)
     const PAGE_SIZE = 20  // 每页显示20条数据
 
@@ -156,3 +157,5 @@ export default function Dashboard() {
         </div>
     )
 }
+
+export default withAuth(Dashboard)  // 使用权限组件包装

@@ -2,11 +2,12 @@ import dynamic from 'next/dynamic'
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/router'
 import axios from 'axios'
+import withAuth from '../components/withAuth'  // 导入权限组件
 
 const ReactQuill = dynamic(() => import('react-quill-new'), { ssr: false })
 import 'react-quill-new/dist/quill.snow.css'
 
-export default function NewArticle(){
+function NewArticle(){
     const r = useRouter()
     const { id } = r.query
     const [title,setTitle] = useState('')
@@ -58,3 +59,5 @@ export default function NewArticle(){
         </div>
     )
 }
+
+export default withAuth(NewArticle)  // 使用权限组件包装
