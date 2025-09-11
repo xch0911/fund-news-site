@@ -32,6 +32,6 @@ export default async function handler(req, res) {
         return res.status(200).json({ user });
     } catch (error) {
         console.error('验证登录状态错误:', error);
-        return res.status(401).json({ error: '登录状态无效1' });
+        return res.status(401).json({ error: '登录状态无效', details: error.toString() });
     }
 }
