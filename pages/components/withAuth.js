@@ -1,7 +1,7 @@
 // components/withAuth.js
 import { useRouter } from 'next/router'
 import { useEffect } from 'react'
-import { useSWR } from 'swr'
+import useSWR from 'swr'
 import axios from 'axios'
 
 const fetcher = async () => {
