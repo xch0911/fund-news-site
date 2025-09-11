@@ -20,7 +20,7 @@ export default async function handler(req, res) {
         }
 
         // 验证密码
-        const passwordMatch = await bcrypt.compare(password, user.password);
+        const passwordMatch = await bcrypt.compare(password, user.passwordHash);
         if (!passwordMatch) {
             return res.status(401).json({ error: '用户名或密码错误' });
         }

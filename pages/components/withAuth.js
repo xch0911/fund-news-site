@@ -32,8 +32,8 @@ export default function withAuth(Component) {
         useEffect(() => {
             if (!isLoading) {
                 // 如果未登录且不在登录页，则重定向到登录页
-                if ((!user || error) && router.pathname !== '/admin/login') {
-                    router.replace('/admin/login');
+                if ((!user || error) && router.pathname !== '/admin') {
+                    router.replace('/admin');
                 }
             }
         }, [user, error, isLoading, router]);
