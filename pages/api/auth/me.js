@@ -22,7 +22,7 @@ export default async function handler(req, res) {
         // 查询用户信息
         const user = await prisma.user.findUnique({
             where: { id: payload.id },
-            select: { id: true, username: true, role: true, email: true }
+            select: { id: true, username: true, role: true }
         });
 
         if (!user) {
