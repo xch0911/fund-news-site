@@ -2,6 +2,16 @@ import Link from 'next/link'
 import prisma from '../lib/prisma'
 import Head from 'next/head'
 
+// 新增：清理HTML标签的工具函数
+const stripHtmlTags = (html) => {
+    // 处理空值情况，避免报错
+    if (!html) return '';
+    // 正则表达式匹配并移除所有HTML标签
+    const plainText = html.replace(/<[^>]*>/g, '');
+    // 移除多余的空格和换行符，让文本更整洁
+    return plainText.replace(/\s+/g, ' ').trim();
+};
+
 export default function Home({ articles, currentPage, totalPages }) {
     // 生成页码导航
     const renderPagination = () => {
@@ -77,7 +87,10 @@ export default function Home({ articles, currentPage, totalPages }) {
                             <Link href={`/articles/${a.id}`}>
                                 <a>
                                     <h2 className="text-xl font-semibold">{a.title}</h2>
-                                    <p className="text-sm text-gray-600">{a.excerpt || (a.content.slice(0, 120) + '...')}</p>
+                                    {/* 关键修改：调用stripHtmlTags处理富文本 */}
+                                    <p className="text-sm text-gray-600">
+                                        {a.excerpt || (stripHtmlTags(a.content).slice(0, 120) + '...')}
+                                    </p>
                                 </a>
                             </Link>
                             <div className="text-xs text-gray-500 mt-2">{new Date(a.createdAt).toLocaleString()}</div>
