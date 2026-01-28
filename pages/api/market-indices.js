@@ -3,11 +3,11 @@ import axios from 'axios';
 
 export default async function handler(req, res) {
     // Stooq Tickers:
-    // ^SSEC: Shanghai Composite
+    // ^SHC: Shanghai Composite (Stooq uses this code found via testing)
     // ^HSI: Hang Seng Index
     // ^SPX: S&P 500
     // ^NDX: NASDAQ 100
-    const symbols = ['^SSEC', '^HSI', '^SPX', '^NDX'];
+    const symbols = ['^SHC', '^HSI', '^SPX', '^NDX'];
     const csvUrl = `https://stooq.com/q/l/?s=${symbols.join('+')}&f=sd2t2ohlc&h&e=csv`;
 
     try {
@@ -40,7 +40,7 @@ export default async function handler(req, res) {
             const changePercent = (changeValue / open) * 100;
             
             let name = symbol;
-            if (symbol === '^SSEC') name = '上证指数';
+            if (symbol === '^SHC') name = '上证指数';
             if (symbol === '^HSI') name = '恒生指数';
             if (symbol === '^SPX') name = '标普500';
             if (symbol === '^NDX') name = '纳斯达克';
