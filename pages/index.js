@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import Head from 'next/head'
 import prisma from '../lib/prisma'
+import useSWR from 'swr' // Add import
 
 // Utility to clean HTML content for excerpts
 const stripHtmlTags = (html) => {
@@ -9,15 +10,17 @@ const stripHtmlTags = (html) => {
     return plainText.replace(/\s+/g, ' ').trim();
 };
 
-// Mock Data for financial look
-const marketIndices = [
-    { name: '上证指数', value: '3,050.45', change: '+0.45%', up: true },
-    { name: '深证成指', value: '10,150.32', change: '-0.21%', up: false },
-    { name: '恒生指数', value: '18,456.90', change: '+1.12%', up: true },
-    { name: '标普500', value: '4,450.50', change: '+0.05%', up: true },
-];
-
 export default function Home({ articles, currentPage, totalPages }) {
+    // Dynamic fetching of market indices
+    const { data: indicesData, error: indicesError } = useSWR('/api/market-indices');
+    
+    // Default fallback to prevent layout shift before data loads
+    const marketIndices = indicesData || [
+        { name: 'Loading...', value: '----', change: '--%', up: true },
+        { name: 'Loading...', value: '----', change: '--%', up: true },
+        { name: 'Loading...', value: '----', change: '--%', up: true },
+        { name: 'Loading...', value: '----', change: '--%', up: true },
+    ];
     
     const renderPagination = () => {
         const pages = [];
@@ -97,7 +100,6 @@ export default function Home({ articles, currentPage, totalPages }) {
                                 <a href="#" className="hover:text-blue-300">市场动态</a>
                                 <a href="#" className="hover:text-blue-300">基金数据</a>
                                 <a href="#" className="hover:text-blue-300">深度视点</a>
-                                <Link href="/admin"><a className="hover:text-blue-300 opacity-60">管理后台</a></Link>
                             </nav>
                         </div>
                     </div>
@@ -267,7 +269,7 @@ export default function Home({ articles, currentPage, totalPages }) {
                     </div>
                 </div>
                 <div className="container mx-auto px-4 mt-8 pt-8 border-t border-slate-800 text-center">
-                    <p className="text-[10px] text-slate-600">&copy; 2026 Asia Fund Research. All Rights Reserved. 沪ICP备xxxxxx号</p>
+                    <p className="text-[10px] text-slate-600">&copy; 2026 Asia Fund Research. All Rights Reserved. </p>
                 </div>
             </footer>
         </div>
