@@ -34,7 +34,6 @@ export default function Article({ article, latestArticles }) {
                             <a href="#" className="hover:text-blue-300">市场动态</a>
                             <a href="#" className="hover:text-blue-300">基金数据</a>
                             <a href="#" className="hover:text-blue-300">深度视点</a>
-                            <Link href="/admin"><a className="hover:text-blue-300 opacity-60">管理后台</a></Link>
                         </nav>
                     </div>
                 </div>
